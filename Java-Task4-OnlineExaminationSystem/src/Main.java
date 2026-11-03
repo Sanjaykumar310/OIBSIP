@@ -2,6 +2,7 @@
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Arrays;
 import javax.swing.*;
 
 public class Main {
@@ -149,6 +150,15 @@ public class Main {
     }
 
     private void showExam() {
+        // Start every exam with a clean state, including after a previous logout.
+        if (timer != null) {
+            timer.stop();
+        }
+        Arrays.fill(answers, null);
+        currentQuestion = 0;
+        secondsRemaining = 300;
+        submitted = false;
+
         frame.getContentPane().removeAll();
         frame.setTitle("Online Examination - " + studentName);
         frame.setSize(750, 500);

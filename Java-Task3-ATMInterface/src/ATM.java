@@ -1,12 +1,8 @@
-
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Scanner;
 
 public class ATM {
     private final Bank bank;
     private final Scanner scanner;
-    private final List<Transaction> history = new ArrayList<>();
 
     public ATM(Bank bank, Scanner scanner) {
         this.bank = bank;
@@ -14,9 +10,7 @@ public class ATM {
     }
 
     public void start() {
-        System.out.println("================================");
-        System.out.println("          JAVA ATM");
-        System.out.println("================================");
+        System.out.println("========== JAVA ATM ==========");
 
         Account account = login();
 
@@ -25,8 +19,7 @@ public class ATM {
             return;
         }
 
-        System.out.println("\nLogin successful. Welcome, "
-                + account.getUserId() + "!");
+        System.out.println("Login successful. Welcome, " + account.getUserId());
 
         boolean running = true;
 
@@ -43,71 +36,51 @@ public class ATM {
             String choice = scanner.nextLine().trim();
 
             switch (choice) {
-                case "1":
-                    showHistory();
-                    break;
-                case "2":
-                    withdraw(account);
-                    break;
-                case "3":
-                    deposit(account);
-                    break;
-                case "4":
-                    transfer(account);
-                    break;
+                case "1": showHistory(account); break;
+                case "2": withdraw(account); break;
+                case "3": deposit(account); break;
+                case "4": transfer(account); break;
                 case "5":
                     System.out.printf("Current balance: Rs. %.2f%n",
-                            account.getBalance());
+                        account.getBalance());
                     break;
                 case "6":
+                    bank.saveData();
                     System.out.println("Thank you for using the ATM. Goodbye!");
                     running = false;
                     break;
                 default:
-                    System.out.println("Invalid option. Please choose 1-6.");
+                    System.out.println("Invalid option.");
             }
         }
     }
 
     private Account login() {
-        for (int attempt = 1; attempt <= 3; attempt++) {
+        for (int i = 1; i <= 3; i++) {
             System.out.print("Enter User ID: ");
-            String userId = scanner.nextLine().trim();
+            String user = scanner.nextLine().trim();
 
             System.out.print("Enter PIN: ");
             String pin = scanner.nextLine().trim();
 
-            Account account = bank.findByUserId(userId);
+            Account account = bank.findByUserId(user);
 
-            if (account != null && account.authenticate(userId, pin)) {
+            if (account != null && account.authenticate(user, pin))
                 return account;
-            }
 
             System.out.println("Incorrect User ID or PIN. Attempts remaining: "
-                    + (3 - attempt));
+                + (3 - i));
         }
-
         return null;
     }
 
-    private void withdraw(Account account) {
-        double amount = readAmount("Enter withdrawal amount: Rs. ");
-
-        if (amount <= 0) {
-            System.out.println("Amount must be greater than zero.");
-            return;
-        }
-
-        if (amount > account.getBalance()) {
-            System.out.println("Insufficient Funds.");
-            return;
-        }
-
-        if (account.withdraw(amount)) {
-            history.add(new Transaction("WITHDRAWAL", amount,
-                    "Cash withdrawal successful"));
-            System.out.printf("Withdrawal successful. Balance: Rs. %.2f%n",
-                    account.getBalance());
+    private double readAmount(String message) {
+        System.out.print(message);
+        try {
+            return Double.parseDouble(scanner.nextLine().trim());
+        } catch (NumberFormatException e) {
+            System.out.println("Invalid amount.");
+            return -1;
         }
     }
 
@@ -115,80 +88,78 @@ public class ATM {
         double amount = readAmount("Enter deposit amount: Rs. ");
 
         if (account.deposit(amount)) {
-            history.add(new Transaction("DEPOSIT", amount,
-                    "Cash deposit successful"));
+            account.addTransaction(new Transaction(
+                "DEPOSIT", amount, "Cash deposit successful"));
+            bank.saveData();
             System.out.printf("Deposit successful. Balance: Rs. %.2f%n",
-                    account.getBalance());
+                account.getBalance());
         } else {
-            System.out.println("Amount must be greater than zero.");
+            System.out.println("Invalid deposit amount.");
+        }
+    }
+
+    private void withdraw(Account account) {
+        double amount = readAmount("Enter withdrawal amount: Rs. ");
+
+        if (amount <= 0) {
+            System.out.println("Invalid amount.");
+        } else if (amount > account.getBalance()) {
+            System.out.println("Insufficient Funds.");
+        } else if (account.withdraw(amount)) {
+            account.addTransaction(new Transaction(
+                "WITHDRAWAL", amount, "Cash withdrawal successful"));
+            bank.saveData();
+            System.out.printf("Withdrawal successful. Balance: Rs. %.2f%n",
+                account.getBalance());
         }
     }
 
     private void transfer(Account sender) {
         System.out.print("Enter recipient account ID: ");
-        String recipientId = scanner.nextLine().trim();
+        String id = scanner.nextLine().trim();
 
-        Account recipient = bank.findByAccountId(recipientId);
+        Account recipient = bank.findByAccountId(id);
 
-        if (recipient == null) {
-            System.out.println("Recipient account not found.");
-            return;
-        }
-
-        if (recipient == sender) {
-            System.out.println("You cannot transfer money to your own account.");
+        if (recipient == null || recipient == sender) {
+            System.out.println("Invalid recipient account.");
             return;
         }
 
         double amount = readAmount("Enter transfer amount: Rs. ");
 
-        if (amount <= 0) {
-            System.out.println("Amount must be greater than zero.");
+        if (amount <= 0 || amount > sender.getBalance()) {
+            System.out.println("Invalid amount or insufficient funds.");
             return;
         }
 
-        if (amount > sender.getBalance()) {
-            System.out.println("Insufficient Funds.");
-            return;
-        }
+        sender.withdraw(amount);
+        recipient.creditTransfer(amount);
 
-        if (sender.withdraw(amount)) {
-            recipient.creditTransfer(amount);
+        sender.addTransaction(new Transaction(
+            "TRANSFER SENT", amount,
+            "To account " + recipient.getAccountId()));
 
-            history.add(new Transaction("TRANSFER SENT", amount,
-                    "To account " + recipient.getAccountId()));
+        recipient.addTransaction(new Transaction(
+            "TRANSFER RECEIVED", amount,
+            "From account " + sender.getAccountId()));
 
-            history.add(new Transaction("TRANSFER RECEIVED", amount,
-                    "From account " + sender.getAccountId()));
+        bank.saveData();
 
-            System.out.println("Transfer successful.");
-            System.out.printf("Your new balance: Rs. %.2f%n",
-                    sender.getBalance());
-        }
+        System.out.println("Transfer successful.");
+        System.out.printf("Your new balance: Rs. %.2f%n",
+            sender.getBalance());
     }
 
-    private double readAmount(String prompt) {
-        System.out.print(prompt);
-        String input = scanner.nextLine().trim();
-
-        try {
-            return Double.parseDouble(input);
-        } catch (NumberFormatException e) {
-            System.out.println("Invalid amount. Please enter a numeric value.");
-            return -1;
-        }
-    }
-
-    private void showHistory() {
+    private void showHistory(Account account) {
         System.out.println("\n====== TRANSACTION HISTORY ======");
 
-        if (history.isEmpty()) {
-            System.out.println("No transactions recorded in this session.");
+        if (account.getTransactions().isEmpty()) {
+            System.out.println("No transactions recorded for this account.");
             return;
         }
 
-        for (int i = 0; i < history.size(); i++) {
-            System.out.println((i + 1) + ". " + history.get(i));
-        }
+        int i = 1;
+        for (Transaction t : account.getTransactions())
+            System.out.println((i++) + ". " + t);
     }
 }

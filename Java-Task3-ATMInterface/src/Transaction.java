@@ -1,8 +1,10 @@
-
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
-public class Transaction {
+public class Transaction implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     private final String type;
     private final double amount;
     private final String details;
@@ -15,14 +17,11 @@ public class Transaction {
         this.timestamp = LocalDateTime.now();
     }
 
-    @Override
     public String toString() {
-        DateTimeFormatter formatter =
-                DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
-
-        return timestamp.format(formatter)
-                + " | " + type
-                + " | Amount: Rs. " + String.format("%.2f", amount)
-                + " | " + details;
+        return timestamp.format(
+            DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss")
+        ) + " | " + type +
+        " | Amount: Rs. " + String.format("%.2f", amount) +
+        " | " + details;
     }
 }

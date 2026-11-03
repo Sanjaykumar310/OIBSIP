@@ -4,3 +4,18 @@
 
 # VS Code settings
 .vscode/
+
+# Java compiled output
+*.class
+**/out/
+
+# Runtime data
+*.ser
+atm-data.ser
+
+# Local backups
+backup_*/
+E:\OIBSIP_Backup/
+
+# IDE files
+.vscode/
