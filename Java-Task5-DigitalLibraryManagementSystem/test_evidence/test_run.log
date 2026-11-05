@@ -1,0 +1,87 @@
+﻿================================================================================
+   DIGITAL LIBRARY MANAGEMENT SYSTEM - AUTOMATED QA TEST HARNESS (TASK 5)        
+================================================================================
+Original Data File : E:\OIBSIP\Java-Task5-DigitalLibraryManagementSystem\library-data.ser
+Original Exists    : true (Size: 778 bytes, Checksum: 6bf1cbdcd65c5bee2bf2009fd2beced50f39146c21422a11ac84f7aba4f5d6b4)
+Source Constants   : LOAN_DAYS = 14, FINE_PER_DAY = Rs. 5.00/day
+
+--- SECTION 1: Authentication & User Verification ---
+PASS | Auth_AdminLogin_ValidCredentials
+PASS | Auth_UserLogin_ValidCredentials
+PASS | Auth_UserLogin_InvalidUsername_Rejected
+PASS | Auth_UserLogin_InvalidPassword_Rejected
+PASS | Auth_RegisterUser_Success
+PASS | Auth_RegisterUser_DuplicateUsername_Rejected
+
+--- SECTION 2: Book Catalog & CRUD Operations ---
+PASS | Book_AddBook_Success
+PASS | Book_AddBook_DuplicateID_Rejected
+PASS | Book_UpdateBook_Success
+PASS | Book_UpdateBook_DataMatches
+PASS | Book_UpdateBook_NonExistentID_Rejected
+PASS | Book_DeleteBook_Success
+PASS | Book_DeleteBook_VerifiedRemoved
+PASS | Book_DeleteBook_NonExistentID_Rejected
+
+--- SECTION 3: Borrowing & Returning on Time (Zero Fine) ---
+PASS | Loan_Book101_InitiallyAvailable
+PASS | Loan_BorrowBook_OnTime_Success
+PASS | Loan_Book101_StateBorrowed
+PASS | Loan_BorrowBook_AlreadyBorrowed_Rejected
+PASS | Loan_BorrowBook_NonExistentBook_Rejected
+PASS | Loan_BorrowBook_NonExistentUser_Rejected
+PASS | Loan_ReturnBook_OnTime_ZeroFine
+PASS | Loan_Book101_AvailableAfterReturn
+PASS | Loan_ReturnBook_NotBorrowed_ReturnsNegative
+
+--- SECTION 4: Reservation Queue (FIFO Ordering) ---
+PASS | Res_BorrowBook102_InitialLoan
+PASS | Res_BorrowUnavailableBook_Rejected
+PASS | Res_ReserveBook_FirstUser_Bob_Success
+PASS | Res_ReserveBook_SecondUser_Charlie_Success
+PASS | Res_ReserveBook_DuplicateUser_Bob_Rejected
+PASS | Res_FIFO_AutoTransfer_To_FirstInQueue_Bob
+PASS | Res_FIFO_AutoTransfer_To_SecondInQueue_Charlie
+PASS | Res_FIFO_QueueExhausted_BookBecomesAvailable
+
+--- SECTION 5: Overdue Non-Zero Fine Calculation & Payment ---
+PASS | Fine_BorrowBook101_ForOverdueScenario
+PASS | Fine_OverdueDays_MatchesSimulated (expected=6, actual=6)
+PASS | Fine_ExpectedAmount_NonZeroPositive (amount=Rs. 30.00)
+PASS | Fine_ReturnOverdueBook_ReturnsNonZeroFine (fine=Rs. 30.00)
+PASS | Fine_ReturnedFine_MatchesExpectedRate (expected=Rs. 30.00, actual=Rs. 30.00)
+PASS | Fine_UserAccountBalance_UpdatedCorrectly (balance=Rs. 30.00)
+PASS | Fine_Payment_ExcessiveAmount_Rejected
+PASS | Fine_Payment_ExcessiveAmount_BalanceUnchanged
+PASS | Fine_Payment_ZeroAmount_Rejected
+PASS | Fine_Payment_NegativeAmount_Rejected
+PASS | Fine_Payment_NonExistentUser_Rejected
+PASS | Fine_Payment_PartialAmount_Success (paid=Rs. 10.00)
+PASS | Fine_Payment_Partial_RemainingBalanceMatches (expected=Rs. 20.00, actual=Rs. 20.00)
+PASS | Fine_Payment_FullRemaining_Success
+PASS | Fine_Payment_FinalBalanceIsZero
+
+--- SECTION 6: Data Persistence & Fine State Across Restarts ---
+PASS | Persist_Setup_BobHasActiveFine
+PASS | Persist_SaveToTestFile_Success
+PASS | Persist_LoadFromTestFile_Success
+PASS | Persist_Book101_AvailableStatePersisted
+PASS | Persist_User1_ClearedFinePersistedZero
+PASS | Persist_Bob_ActiveFinePersistedNonZero (balance=Rs. 25.00)
+PASS | Persist_ReloadedInstance_PayFineSuccess
+PASS | Persist_ReloadedInstance_FineClearedToZero
+PASS | Persist_Bob_FineClearedAfterSecondSaveAndReload
+
+--- SECTION 7: Input Validation & Boundary Robustness ---
+PASS | Validation_Book_NegativeId_ThrowsException
+PASS | Validation_Book_EmptyTitle_ThrowsException
+PASS | Validation_User_ShortPassword_ThrowsException
+PASS | Validation_User_EmptyUsername_ThrowsException
+
+--- SECTION 8: Data Safety & Original File Integrity Check ---
+PASS | Safety_TemporaryTestData_CleanedUp
+PASS | Safety_OriginalLibraryDataFile_CompletelyUntouched
+
+================================================================================
+TEST EXECUTION SUMMARY: Total=61 | Passed=61 | Failed=0
+================================================================================

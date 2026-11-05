@@ -1,21 +1,60 @@
-# Java compiled files
+# Java compiled bytecode
 *.class
+**/*.class
+out/
 **/out/
+bin/
+**/bin/
 
-# VS Code settings
-.vscode/
-
-# Java compiled output
-*.class
-**/out/
-
-# Runtime data
+# Java serialized runtime data
 *.ser
-atm-data.ser
+**/*.ser
 
-# Local backups
+# Temporary and log files
+*.log
+**/*.log
+*.tmp
+**/*.tmp
+temp.txt
+tmp.txt
+**/temp.txt
+**/tmp.txt
+*_Temp/
+**/test_tmp/
+
+# Whitelist preserved test evidence logs
+!**/test_evidence/**
+!**/test_evidence/*.log
+
+# Backup files and directories
+*.bak
+*.bak.*
+**/*.bak
+**/*.bak.*
 backup_*/
+**/backup_*/
+src_backup/
+**/src_backup/
 E:\OIBSIP_Backup/
 
-# IDE files
+# IDE and Editor files
 .vscode/
+**/.vscode/
+.idea/
+**/.idea/
+*.iml
+.settings/
+.project
+.classpath
+
+# OS generated files
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Secrets and environment configurations
+.env
+*.env
+*.key
+*.pem
+credentials.json

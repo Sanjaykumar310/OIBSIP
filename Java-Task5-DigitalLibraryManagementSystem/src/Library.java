@@ -9,6 +9,7 @@ public class Library implements Serializable {
     private final Map<Integer,List<String>> reservations=new LinkedHashMap<>();
     private final List<String> queries=new ArrayList<>();
 
+    public List<Book> getBooks(){ return Collections.unmodifiableList(books); }
     public Book findBookById(int id){for(Book b:books)if(b.getId()==id)return b;return null;}
     public LibraryUser findUserByUsername(String name){for(LibraryUser u:users)if(u.getUsername().equalsIgnoreCase(name))return u;return null;}
     public int nextUserId(){int max=0;for(LibraryUser u:users)max=Math.max(max,u.getId());return max+1;}
@@ -63,6 +64,47 @@ public class Library implements Serializable {
     public void submitQuery(String user,String msg){queries.add("User: "+user+" | "+new Date()+" | "+msg);}
     public void displayQueries(){if(queries.isEmpty()){System.out.println("No queries.");return;}for(String q:queries)System.out.println(q);}
     public boolean payFine(String user,double amount){LibraryUser u=findUserByUsername(user);return u!=null&&u.payFine(amount);}
-    public static Library load(String path){File f=new File(path);if(!f.exists())return new Library();try(ObjectInputStream in=new ObjectInputStream(new FileInputStream(f))){return (Library)in.readObject();}catch(Exception e){System.out.println("Starting fresh; saved data could not be loaded: "+e.getMessage());return new Library();}}
+    public static Library load(String path){
+        File f = new File(path);
+        if (!f.exists()) {
+            // No persisted library – start fresh.
+            return new Library();
+        }
+        try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(f))) {
+            return (Library) in.readObject();
+        } catch (InvalidClassException | StreamCorruptedException e) {
+            System.out.println("Warning: Library data appears corrupted (" + e.getMessage() + ")");
+            backupCorruptedFile(f);
+            // Return a fresh instance so the app can continue.
+            return new Library();
+        } catch (IOException e) {
+            System.out.println("Error loading library data: " + e.getMessage());
+            return new Library();
+        } catch (ClassNotFoundException e) {
+            System.out.println("Error: class definition missing while loading library data.");
+            return new Library();
+        }
+    }
+
+    /**
+     * Back up a corrupted library file to <name>.bak.<timestamp>.
+     */
+    private static void backupCorruptedFile(File original) {
+        try {
+            String backupName = original.getName() + ".bak." + System.currentTimeMillis();
+            File backup = new File(backupName);
+            try (InputStream in = new FileInputStream(original);
+                 OutputStream out = new FileOutputStream(backup)) {
+                byte[] buf = new byte[8192];
+                int len;
+                while ((len = in.read(buf)) > 0) {
+                    out.write(buf, 0, len);
+                }
+            }
+            System.out.println("Corrupted library data backed up as " + backup.getName());
+        } catch (IOException ex) {
+            System.out.println("Failed to back up corrupted library data: " + ex.getMessage());
+        }
+    }
     public void save(String path){try(ObjectOutputStream out=new ObjectOutputStream(new FileOutputStream(path))){out.writeObject(this);}catch(IOException e){System.out.println("Save failed: "+e.getMessage());}}
 }

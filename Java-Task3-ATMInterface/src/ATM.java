@@ -77,9 +77,14 @@ public class ATM {
     private double readAmount(String message) {
         System.out.print(message);
         try {
-            return Double.parseDouble(scanner.nextLine().trim());
+            double amount = Double.parseDouble(scanner.nextLine().trim());
+            if (!Double.isFinite(amount) || amount <= 0) {
+                System.out.println("Invalid amount. Enter a finite positive number.");
+                return -1;
+            }
+            return amount;
         } catch (NumberFormatException e) {
-            System.out.println("Invalid amount.");
+            System.out.println("Invalid amount. Enter a valid number.");
             return -1;
         }
     }

@@ -57,7 +57,8 @@ public class Main {
     private void showLogin() {
         frame = new JFrame("Online Examination System");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(500, 350);
+        // Use pack() for platform‑independent sizing
+        frame.pack();
         frame.setLocationRelativeTo(null);
 
         JPanel panel = new JPanel(new GridBagLayout());
@@ -161,7 +162,8 @@ public class Main {
 
         frame.getContentPane().removeAll();
         frame.setTitle("Online Examination - " + studentName);
-        frame.setSize(750, 500);
+        // Use pack() after configuring exam frame
+        frame.pack();
         frame.setLayout(new BorderLayout(12, 12));
 
         JPanel header = new JPanel(new BorderLayout());

@@ -5,14 +5,8 @@ public class Main {
     private static final String ADMIN="admin", ADMIN_PASS="admin123";
     private static Library lib;
     public static void main(String[] args){
-        lib=Library.load(DATA);lib.seedIfEmpty();save();
-        boolean run=true;
-        while(run){
-            System.out.println("\n===== DIGITAL LIBRARY MANAGEMENT =====");
-            System.out.println("1. Admin login\n2. User login\n3. Register new user\n4. Exit");
-            int c=number("Choose: ",1,4);
-            if(c==1)adminLogin();else if(c==2)userLogin();else if(c==3)register();else{save();run=false;System.out.println("Data saved. Goodbye.");}
-        }sc.close();
+        // Launch Swing GUI instead of console interaction
+        LibraryGUI.launch();
     }
     private static void adminLogin(){
         System.out.print("Admin username: ");String u=sc.nextLine().trim();
